@@ -1,8 +1,5 @@
 mod terminal;
 mod view;
-use std::{cmp::min, io::Error};
-
-use terminal::{Position, Size, Terminal};
 
 use crossterm::event::{
     read,
@@ -10,6 +7,9 @@ use crossterm::event::{
     KeyCode::{self},
     KeyEvent, KeyEventKind, KeyModifiers,
 };
+use std::{cmp::min, io::Error};
+
+use terminal::{Position, Size, Terminal};
 use view::View;
 
 #[derive(Default)]
