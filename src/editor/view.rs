@@ -15,15 +15,10 @@ pub struct View {
 }
 
 impl View {
-    pub fn render(&self) -> Result<(), Error> {
+    pub fn render_welcome_screen(&self) -> Result<(), Error> {
         let Size { height, .. } = Terminal::size()?;
         for current_row in 0..height {
             Terminal::clear_line()?;
-            if let Some(line) = self.buffer.lines.get(current_row) {
-                Terminal::print(line)?;
-                Terminal::print("\r\n")?;
-                continue;
-            }
             // we allow this since we don't care if our welcome message is put _exactly_ in the middle.
             // it's allowed to be a bit up or down
             #[allow(clippy::integer_division)]
@@ -38,6 +33,31 @@ impl View {
         }
         Ok(())
     }
+
+    pub fn render_buffer(&self) -> Result<(), Error> {
+        let Size { height, .. } = Terminal::size()?;
+
+        for current_row in 0..height {
+            Terminal::clear_line()?;
+            if let Some(line) = self.buffer.lines.get(current_row) {
+                Terminal::print(line)?;
+                Terminal::print("\r\n")?;
+            } else {
+                Self::draw_empty_row()?; 
+            }
+        }
+        Ok(())
+    }
+
+    pub fn render(&self) -> Result<(), Error> {
+        if self.buffer.is_empty() {
+            self.render_welcome_screen()?;
+        } else {
+            self.render_buffer()?;
+        }
+        Ok(())
+    }
+
     fn draw_welcome_message() -> Result<(), Error> {
         let mut welcome_message = format!("{NAME} editor -- version {VERSION}");
         let width = Terminal::size()?.width;
@@ -55,5 +75,11 @@ impl View {
     fn draw_empty_row() -> Result<(), Error> {
         Terminal::print("~")?;
         Ok(())
+    }
+
+    pub fn load(&mut self, file_name: &str) {
+        if let Ok(buffer) = Buffer::load(file_name) {
+            self.buffer = buffer;
+        }
     }
 }

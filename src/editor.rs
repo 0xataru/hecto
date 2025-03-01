@@ -7,7 +7,7 @@ use crossterm::event::{
     KeyCode::{self},
     KeyEvent, KeyEventKind, KeyModifiers,
 };
-use std::{cmp::min, io::Error};
+use std::{cmp::min, io::Error, env};
 
 use terminal::{Position, Size, Terminal};
 use view::View;
@@ -28,9 +28,17 @@ struct Location {
 impl Editor {
     pub fn run(&mut self) {
         Terminal::initialize().unwrap();
+        self.handle_args();
         let result = self.repl();
         Terminal::terminate().unwrap();
         result.unwrap();
+    }
+
+    fn handle_args(&mut self) {
+        let args: Vec<String> = env::args().collect();
+        if let Some(file_path) = args.get(1) {
+            self.view.load(file_path);
+        }
     }
 
     fn repl(&mut self) -> Result<(), Error> {
